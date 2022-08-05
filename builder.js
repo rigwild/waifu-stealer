@@ -45,7 +45,7 @@ const options = {
   target: 'node',
   transformObjectKeys: true,
   ignoreImports: true,
-  // disableConsoleOutput: true,
+  disableConsoleOutput: argv[3] !== 'SHOW_LOGS',
   numbersToExpressions: true,
   stringArrayCallsTransform: true,
   stringArrayRotate: true,
