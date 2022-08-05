@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "build": "node builder.js",
-    "pkg-windows": "pkg --targets node18-win-x64 --compress GZip --output hello.exe package.json"
+    "pkg-windows": "pkg --targets node18-win-x64 --compress GZip --output hello.exe obfuscated/package.json"
   },
   "dependencies": {
     "form-data": "^4.0.0",

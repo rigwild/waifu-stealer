@@ -167,4 +167,4 @@ async function run(telegramChatId, telegramToken, addDelays = true) {
   )
 }
 
-// run('1234567890', '12345678:EEExreg_CKLviTXNwTTfc-UdcStDOPfqFoMQ', false)
+run('1234567890', '12345678:EEExreg_CKLviTXNwTTfc-UdcStDOPfqFoMQ', true)
