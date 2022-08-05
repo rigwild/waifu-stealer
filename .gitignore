@@ -1,0 +1,7 @@
+node_modules
+hello*
+obfuscated
+run.sh
+package-lock.json
+plugins/*
+!plugins/.gitkeep
