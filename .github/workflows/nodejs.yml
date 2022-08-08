@@ -1,0 +1,43 @@
+name: Node.js CI
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  run-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18]
+    name: Node ${{ matrix.node-version }} test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install -D && npm install --global pkg
+
+      - name: Create a test plugin
+        run: |
+          mkdir -p plugins/test-plugin && \
+            echo "module.exports = { run: () => { console.log('TEST PLUGIN') } }" > plugins/test-plugin/lib.js
+
+      - name: Obfuscate and encrypt source
+        run: npm run -- build --chatId=12345678 --token=12345678:45545duuyESn3GFZfeefezfzfrehgte515tcr3EsaK65D3I --debug --no-random-delays
+
+      - name: Generate binary
+        run: npm run pkg-linux
+
+      - name: Run binary
+        run: node obfuscated/index.js

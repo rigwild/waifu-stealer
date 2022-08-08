@@ -6,7 +6,11 @@
   "scripts": {
     "start": "node index.js",
     "build": "node builder.js",
-    "pkg-windows": "pkg --targets node18-win-x64 --compress GZip --output hello.exe obfuscated/package.json"
+    "pkg-windows": "pkg --targets node18-win-x64 --compress GZip --output hello.exe obfuscated/package.json",
+    "pkg-linux": "pkg --targets node18-linux-x64 --compress GZip --output hello obfuscated/package.json",
+    "pkg-linux-arm": "pkg --targets node18-linux-arm64 --compress GZip --output hello obfuscated/package.json",
+    "pkg-macos": "pkg --targets node18-macos-x64 --compress GZip --output hello obfuscated/package.json",
+    "pkg-macos-arm": "pkg --targets node18-macos-arm64 --compress GZip --output hello obfuscated/package.json"
   },
   "dependencies": {
     "form-data": "^4.0.0",
