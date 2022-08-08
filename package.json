@@ -15,13 +15,16 @@
     "node-machine-id": "^1.1.12"
   },
   "devDependencies": {
+    "esbuild": "^0.14.53",
     "fs-extra": "^10.1.0",
-    "javascript-obfuscator": "^4.0.0"
+    "javascript-obfuscator": "^4.0.0",
+    "minimist": "^1.2.6"
   },
   "workspaces": [
     "plugins/*"
   ],
   "pkg": {
-    "scripts": "plugins/**/lib.js"
+    "scripts": "plugins/**/lib.js",
+    "assets": "build/*"
   }
 }

